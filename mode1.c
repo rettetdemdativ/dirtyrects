@@ -1,32 +1,67 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct rect
 {
 	uint32_t x1, y1, x2, y2;
 };
 
-struct rect *rect_arr;
-int rect_arr_length = 0;
+struct rect *rect_arr, *upd_arr;
+int rect_arr_length = 0, upd_arr_length = 0;
+bool skip = false;
 
 void get_update_rects()
 {
-	for (int i = 0; i < rect_arr_length; i++) {
-		printf("start: %d, end: %d\n", rect_arr[i].y1, 
-		       rect_arr[i].y2);
+	for (int i = 0; i < upd_arr_length; i++) {
+		printf("start: %d, end: %d\n", upd_arr[i].y1, 
+		       upd_arr[i].y2);
 	}
 }
 
 int add_rect(struct rect *rectangle)
 {
-	struct rect *temp = realloc(rect_arr, (rect_arr_length+1)*sizeof(struct rect));
+	struct rect *temp =
+		realloc(rect_arr, (rect_arr_length+1)*sizeof(struct rect));
 	if (temp == NULL) {
 		printf("Error allocating memory!\n");
 		return 1;
 	}
 	rect_arr = temp;
 	rect_arr[rect_arr_length++] = *rectangle;
+	return 0;
+}
+
+int rem_rect(int index)
+{
+	for (int i = 0; i < rect_arr_length; i++) {
+		if (index == i) {
+			continue;
+		}
+		rect_arr[i] = rect_arr[i];
+	}
+	struct rect *temp =
+		realloc(rect_arr, (rect_arr_length-1)*sizeof(struct rect));
+	if(temp == NULL) {
+		printf("Error allocating memory!\n");
+		return 1;
+	}
+	rect_arr = temp;
+	rect_arr_length--;
+	return 0;
+}
+
+int add_upd(const struct rect *rectangle)
+{
+	struct rect *temp =
+		realloc(upd_arr, (upd_arr_length+1)*sizeof(struct rect));
+	if (temp == NULL) {
+		printf("Error allocating memory!\n");
+		return 1;
+	}
+	upd_arr = temp;
+	upd_arr[upd_arr_length++] = *rectangle;
 	return 0;
 }
 
@@ -37,13 +72,57 @@ int compare_rects(const void *a, const void *b)
 	return (int)(rect_a->y1 - rect_b->y1);
 }
 
-void mark_dirty_rect(const struct rect *dirty)
+bool rects_overlap(const struct rect *dirty, const struct rect *next_dirty)
 {
+	if (dirty->y2 < next_dirty->y1) {
+		return false;
+	}
+	//printf("overlap at %d and %d\n", dirty->y1, next_dirty->y1);
+	return true;
+}
+
+struct rect fix_overlap(const struct rect *dirty, const struct rect *next_dirty)
+{
+	struct rect fixed_rect;
+	fixed_rect.x1 =
+		(dirty->x1 < next_dirty->x1 ? dirty->x1 : next_dirty->x1);
+	fixed_rect.y1 =
+		(dirty->y1 < next_dirty->y1 ? dirty->y1 : next_dirty->y1);
+	fixed_rect.x2 =
+		(dirty->x2 > next_dirty->x2 ? dirty->x2 : next_dirty->x2);
+	fixed_rect.y2 =
+		(dirty->y2 > next_dirty->y2 ? dirty->y2 : next_dirty->y2);
+	return fixed_rect;
+}
+
+void mark_dirty_rect(const struct rect *dirty, int index)
+{
+	for (int j = index; j < rect_arr_length; j++) {
+		if (rects_overlap(dirty, &rect_arr[j])) {
+			struct rect fixed_rect =
+				fix_overlap(dirty, &rect_arr[j]);
+			add_upd(&fixed_rect);
+			skip = true;
+			return;
+		}
+	}
+	add_upd(dirty);
+}
+
+void comb()
+{
+	for (int i = 0; i < rect_arr_length-1; i++) {
+		if (skip) {
+			i++;
+			skip = false;
+		}
+		mark_dirty_rect(&rect_arr[i], i+1);
+	}
 }
 
 int main(int argc, char **argv)
 {
-	struct rect d1, d2, d3, d4;
+	struct rect d1, d2, d3, d4, d5, d6;
 	d1.x1 = 100;
 	d1.y1 = 50;
 	d1.x2 = 250;
@@ -64,12 +143,25 @@ int main(int argc, char **argv)
 	d4.x2 = 1050;
 	d4.y2 = 1080;
 
+	d5.x1 = 500;
+	d5.y1 = 300;
+	d5.x2 = 700;
+	d5.y2 = 400;
+
+	d6.x1 = 500;
+	d6.y1 = 350;
+	d6.x2 = 600;
+	d6.y2 = 750;
+
 	add_rect(&d1);
 	add_rect(&d2);
 	add_rect(&d3);
 	add_rect(&d4);
+	add_rect(&d5);
+	add_rect(&d6);
 
 	qsort(rect_arr, rect_arr_length, sizeof(struct rect), compare_rects);
+	comb();
 
 	get_update_rects();
 	return 0;
