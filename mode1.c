@@ -10,7 +10,6 @@ struct rect
 
 struct rect *rect_arr, *upd_arr;
 int rect_arr_length = 0, upd_arr_length = 0;
-bool skip = false;
 
 void get_update_rects()
 {
@@ -52,7 +51,7 @@ int rem_rect(int index)
 	return 0;
 }
 
-int add_upd(const struct rect *rectangle)
+int add_upd(const struct rect rectangle)
 {
 	struct rect *temp =
 		(struct rect*)realloc(upd_arr, (upd_arr_length+1)*sizeof(struct rect));
@@ -61,7 +60,7 @@ int add_upd(const struct rect *rectangle)
 		return 1;
 	}
 	upd_arr = temp;
-	upd_arr[upd_arr_length++] = *rectangle;
+	upd_arr[upd_arr_length++] = rectangle;
 	return 0;
 }
 
@@ -72,51 +71,48 @@ int compare_rects(const void *a, const void *b)
 	return (int)(rect_a->y1 - rect_b->y1);
 }
 
-bool rects_overlap(const struct rect *dirty, const struct rect *next_dirty)
+bool rects_overlap(const struct rect *dirty, const struct rect *prev_dirty)
 {
-	if (dirty->y2 < next_dirty->y1) {
+	if (prev_dirty->y2 < dirty->y1) {
 		return false;
 	}
-	//printf("overlap at %d and %d\n", dirty->y1, next_dirty->y1);
 	return true;
 }
 
-struct rect fix_overlap(const struct rect *dirty, const struct rect *next_dirty)
+struct rect fix_overlap(const struct rect *dirty, const struct rect *prev_dirty)
 {
 	struct rect fixed_rect;
 	fixed_rect.x1 =
-		(dirty->x1 < next_dirty->x1 ? dirty->x1 : next_dirty->x1);
+		(dirty->x1 < prev_dirty->x1 ? dirty->x1 : prev_dirty->x1);
 	fixed_rect.y1 =
-		(dirty->y1 < next_dirty->y1 ? dirty->y1 : next_dirty->y1);
+		(dirty->y1 < prev_dirty->y1 ? dirty->y1 : prev_dirty->y1);
 	fixed_rect.x2 =
-		(dirty->x2 > next_dirty->x2 ? dirty->x2 : next_dirty->x2);
+		(dirty->x2 > prev_dirty->x2 ? dirty->x2 : prev_dirty->x2);
 	fixed_rect.y2 =
-		(dirty->y2 > next_dirty->y2 ? dirty->y2 : next_dirty->y2);
+		(dirty->y2 > prev_dirty->y2 ? dirty->y2 : prev_dirty->y2);
 	return fixed_rect;
 }
 
-void mark_dirty_rect(const struct rect *dirty, int index)
+void mark_dirty_rect(int index, const struct rect *dirty)
 {
-	for (int j = index; j < rect_arr_length; j++) {
-		if (rects_overlap(dirty, &rect_arr[j])) {
-			struct rect fixed_rect =
-				fix_overlap(dirty, &rect_arr[j]);
-			add_upd(&fixed_rect);
-			skip = true;
-			return;
-		}
+	if (index == 0) {
+		add_upd(*dirty);
+		return;
 	}
-	add_upd(dirty);
+
+	if (rects_overlap(dirty, &upd_arr[upd_arr_length-1])) {
+		struct rect fixed_rect =
+			fix_overlap(dirty, &upd_arr[upd_arr_length-1]);
+		upd_arr[upd_arr_length-1] = fixed_rect;
+		return;
+	}
+	add_upd(*dirty);
 }
 
 void comb()
 {
-	for (int i = 0; i < rect_arr_length-1; i++) {
-		if (skip) {
-			i++;
-			skip = false;
-		}
-		mark_dirty_rect(&rect_arr[i], i+1);
+	for (int i = 0; i < rect_arr_length; i++) {
+		mark_dirty_rect(i, &rect_arr[i]);
 	}
 }
 
