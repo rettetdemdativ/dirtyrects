@@ -23,7 +23,7 @@ void get_update_rects()
 int add_rect(struct rect *rectangle)
 {
 	struct rect *temp =
-		realloc(rect_arr, (rect_arr_length+1)*sizeof(struct rect));
+		(struct rect*)realloc(rect_arr, (rect_arr_length+1)*sizeof(struct rect));
 	if (temp == NULL) {
 		printf("Error allocating memory!\n");
 		return 1;
@@ -42,7 +42,7 @@ int rem_rect(int index)
 		rect_arr[i] = rect_arr[i];
 	}
 	struct rect *temp =
-		realloc(rect_arr, (rect_arr_length-1)*sizeof(struct rect));
+		(struct rect*)realloc(rect_arr, (rect_arr_length-1)*sizeof(struct rect));
 	if(temp == NULL) {
 		printf("Error allocating memory!\n");
 		return 1;
@@ -55,7 +55,7 @@ int rem_rect(int index)
 int add_upd(const struct rect *rectangle)
 {
 	struct rect *temp =
-		realloc(upd_arr, (upd_arr_length+1)*sizeof(struct rect));
+		(struct rect*)realloc(upd_arr, (upd_arr_length+1)*sizeof(struct rect));
 	if (temp == NULL) {
 		printf("Error allocating memory!\n");
 		return 1;
