@@ -1,3 +1,6 @@
+// Anna & Michael
+// July 2016
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
