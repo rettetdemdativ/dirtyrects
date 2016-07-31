@@ -1,23 +1,3 @@
-Hi Michael,
-
-As I mentioned, I’d like you to solve a small programming problem before we meet up. This isn’t an artificial exam question style thing, let alone a trick question. It’s a genuine problem that turned up last week in a project we’re working on, so hopefully representative of something you might encounter while working with us, but can still be explained and solved in isolation. The two of us came up with different solutions, which hopefully makes this a little more interesting too.
-
-
-A few things I feel I should point out:
-
-- Don’t feel like you have to spend a lot of time on this; you probably have better things to do. A working solution is of course much better than none, but we will certainly not be microbenchmarking anything. You’re also not competing with anyone. :-) If you only have time to solve one of the 2 parts, that’s also OK.
-
-- If you come up with multiple possible solutions to either part, you don’t need to implement them all, but it would be interesting if you noted them down so we could talk about them.
-
-- Please use C or C++ (whichever you prefer) for at least one solution. Using the language's standard libraries is fine, other libraries are almost certainly overkill.
-
-- I’d appreciate if you didn’t hunt around the web for possible algorithms to solve it, at least not before you’ve come up with a solution yourself. Looking up standard library documentation etc., referring back to older code of yours, etc. are of course absolutely fine.
-
-- I haven’t had a chance to try this question on anyone else, so if any part of it doesn’t make sense, or you feel there’s information missing, or my examples are wrong, don’t be afraid to ask.
-
-- You’ll want to write some kind of test program around the solution(s). We’d definitely like to see that so we can run it as well as discussing. Something that will build without much trouble with gcc or clang on Linux or OS X would be good.
-
-
 The situation:
 
 We are working on a driver for a USB display device. The operating system periodically updates some memory containing the framebuffer with new image data, and also tells our driver about one or more rectangular areas that it has changed (“dirty rectangles"). We need to send at least the modified pixels to the device, but the device has 2 specific update modes which have different restrictions, and we have to support both. Given the dirty rectangles and the update restrictions, your code should produce a list of areas that should be sent to the device. (The 2 modes and solutions are independent, input data examples apply to both.)
