@@ -110,7 +110,8 @@ int insert_rect(struct rect *base, struct rect *rec, uint32_t *size)
 int main(int argc, char **argv)
 {
 	uint32_t rect_arr_length = 0;
-	struct rect *rect_arr = (struct rect*)malloc(rect_arr_length*sizeof(struct rect));
+	struct rect *rect_arr =
+		(struct rect*)malloc(rect_arr_length*sizeof(struct rect));
 	struct rect r1, r2, r3, r4, r5;
 	r1.x1 = 95;
 	r1.y1 = 32;
