@@ -1,4 +1,4 @@
-// Author(s): Anna Schober, Michael Koeppl
+// Author(s): Michael Koeppl
 // July 2016
 
 #include <stdio.h>
